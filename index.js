@@ -4,6 +4,8 @@ const { gameOptions, againOptions } = require("./options");
 const token = "1942269205:AAGw7fX3gDGv7IPkHO04rRB0gzTlJLkYoAE";
 const bot = new TelegramApi(token, { polling: true });
 
+const chats = {};
+
 const startGame = async (chatId) => {
   await bot.sendMessage(
     chatId,
@@ -48,26 +50,24 @@ const start = () => {
   bot.on("callback_query", async (msg) => {
     const data = msg.data;
     const chatId = msg.message.chat.id;
+
     if (data === "/again") {
       return startGame(chatId);
     }
-    const user = await UserModel.findOne({ chatId });
+
     if (data == chats[chatId]) {
-      user.right += 1;
-      await bot.sendMessage(
+      return bot.sendMessage(
         chatId,
         `Поздравляю, ты отгадал цифру ${chats[chatId]}`,
         againOptions
       );
     } else {
-      user.wrong += 1;
-      await bot.sendMessage(
+      return bot.sendMessage(
         chatId,
         `К сожалению ты не угадал, бот загадал цифру ${chats[chatId]}`,
         againOptions
       );
     }
-    await user.save();
   });
 };
 
